@@ -29,8 +29,10 @@ from utilities.constants import (
     TIMEOUT_3MIN,
     TIMEOUT_5MIN,
     TIMEOUT_15SEC,
+    OS_FLAVOR_FEDORA,
     Images,
 )
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 from utilities.storage import check_disk_count_in_vm, get_downloaded_artifact
 
 LOGGER = logging.getLogger(__name__)
@@ -168,6 +170,7 @@ def test_successful_upload_with_supported_formats(
     local_name,
     unprivileged_client,
 ):
+    print(f"*******Remote image path********: {remote_name}")
     local_name = f"{tmpdir}/{local_name}"
     get_downloaded_artifact(remote_name=remote_name, local_name=local_name)
     with storage_utils.upload_image_to_dv(
@@ -178,7 +181,7 @@ def test_successful_upload_with_supported_formats(
     ) as dv:
         storage_utils.upload_token_request(storage_ns_name=namespace.name, pvc_name=dv.pvc.name, data=local_name)
         dv.wait_for_dv_success()
-        with storage_utils.create_vm_from_dv(dv=dv) as vm_dv:
+        with storage_utils.create_vm_from_dv(dv=dv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True,) as vm_dv:
             check_disk_count_in_vm(vm=vm_dv)
 
 
@@ -193,7 +196,7 @@ def test_successful_upload_with_supported_formats(
             {
                 "dv_name": "cnv-2018",
                 "source": "upload",
-                "dv_size": "3Gi",
+                "dv_size": "10Gi",
                 "wait": False,
             },
             marks=(pytest.mark.polarion("CNV-2018")),

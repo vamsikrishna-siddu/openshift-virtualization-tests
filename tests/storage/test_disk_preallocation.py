@@ -114,7 +114,7 @@ def test_preallocation_dv(
                 "dv_name": "cnv-5513",
                 "source": "http",
                 "image": f"{Images.Cirros.DIR}/{Images.Cirros.QCOW2_IMG}",
-                "dv_size": "100Mi",
+                "dv_size": "10Gi",
             },
             marks=pytest.mark.polarion("CNV-5513"),
         ),

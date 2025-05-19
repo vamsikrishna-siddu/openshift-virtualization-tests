@@ -54,8 +54,8 @@ from utilities.constants import (
     DV_DISK,
     EVICTIONSTRATEGY,
     IP_FAMILY_POLICY_PREFER_DUAL_STACK,
-    LINUX_AMD_64,
-    LINUX_STR,
+    LINUX_S390X,
+    LIVE_MIGRATE,
     OS_FLAVOR_CIRROS,
     OS_FLAVOR_FEDORA,
     OS_FLAVOR_WINDOWS,
@@ -1061,6 +1061,10 @@ class VirtualMachineForTests(VirtualMachine):
         # In order to use this property VM should be created with ssh=True
         self.username = self.username or self.login_params["username"]
         self.password = self.password or self.login_params["password"]
+        
+        print(f"Username: {self.username}")
+        print(f"Password: {self.password}")
+        
 
         LOGGER.info(f"SSH command: ssh -o 'ProxyCommand={self.virtctl_port_forward_cmd}' {self.username}@{self.name}")
         host = Host(hostname=self.name)
@@ -2291,7 +2295,7 @@ def wait_for_kv_stabilize(admin_client, hco_namespace):
 
 
 def get_oc_image_info(  # type: ignore[return]
-    image: str, pull_secret: str | None = None, architecture: str = LINUX_AMD_64
+    image: str, pull_secret: str | None = None, architecture: str = LINUX_S390X
 ) -> dict[str, Any]:
     def _get_image_json(cmd: str) -> dict[str, Any]:
         return json.loads(run_command(command=shlex.split(cmd), check=False)[1])

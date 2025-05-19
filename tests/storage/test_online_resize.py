@@ -106,7 +106,7 @@ def expand_pvc(dv, size_change):
 
 
 def get_resize_count(vm):
-    commands = shlex.split("dmesg | grep -c 'new size' || true")
+    commands = shlex.split("sudo dmesg | grep -c 'new size' || true")
     return int(run_ssh_commands(host=vm.ssh_exec, commands=commands)[0])
 
 
@@ -282,6 +282,7 @@ def test_simultaneous_disk_expand(
     ],
     indirect=True,
 )
+
 def test_disk_expand_then_clone_fail(
     cirros_dv_for_online_resize,
     cirros_vm_after_expand,

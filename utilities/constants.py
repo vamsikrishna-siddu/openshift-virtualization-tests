@@ -119,7 +119,7 @@ class ArchImages:
         class Rhel:
             RHEL7_8_IMG = ""
             RHEL7_9_IMG = ""
-            RHEL8_0_IMG = ""
+            RHEL8_0_IMG = "rhel-95-s390x.qcow2"
             RHEL8_2_IMG = ""
             RHEL8_2_EFI_IMG = ""
             RHEL8_8_IMG = ""
@@ -723,6 +723,7 @@ class NamespacesNames:
 CNV_SUPPLEMENTAL_TEMPLATES_URL = "https://raw.githubusercontent.com/RHsyseng/cnv-supplemental-templates/main/templates"
 
 LINUX_AMD_64 = "linux/amd64"
+LINUX_S390X = "linux/s390x"
 
 EVICTIONSTRATEGY = "evictionStrategy"
 CRITICAL_STR = "critical"

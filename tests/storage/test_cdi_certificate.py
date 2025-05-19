@@ -26,8 +26,12 @@ from utilities.constants import (
     TIMEOUT_3MIN,
     TIMEOUT_5SEC,
     TIMEOUT_10MIN,
+    OS_FLAVOR_FEDORA,
     Images,
 )
+
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
+
 from utilities.hco import ResourceEditorValidateHCOReconcile
 from utilities.storage import (
     check_disk_count_in_vm,
@@ -179,7 +183,7 @@ def test_dv_delete_from_vm(
     multi_storage_cirros_vm.stop(wait=True)
     assert dv_of_multi_storage_cirros_vm.delete(wait=True, timeout=TIMEOUT_1MIN), "DV was not deleted"
     # DV re-creation is triggered by VM
-    running_vm(vm=multi_storage_cirros_vm, wait_for_interfaces=False)
+    running_vm(vm=multi_storage_cirros_vm, wait_for_interfaces=False,wait_for_cloud_init=True)
     check_disk_count_in_vm(vm=multi_storage_cirros_vm)
 
 
@@ -199,7 +203,7 @@ def test_upload_after_certs_renewal(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=dv_name,
-        size="1Gi",
+        size="10Gi",
         image_path=LOCAL_QCOW2_IMG_PATH,
         storage_class=storage_class_name_scope_module,
         insecure=True,
@@ -207,7 +211,7 @@ def test_upload_after_certs_renewal(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv, start=True) as vm:
+        with storage_utils.create_vm_from_dv(dv=dv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True,start=True) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -218,7 +222,7 @@ def test_upload_after_certs_renewal(
             {
                 "dv_name": "dv-source",
                 "image": f"{Images.Cirros.DIR}/{Images.Cirros.QCOW2_IMG}",
-                "dv_size": "1Gi",
+                "dv_size": "10Gi",
                 "wait": True,
             },
         ),
@@ -244,7 +248,7 @@ def test_import_clone_after_certs_renewal(
         storage_class=data_volume_multi_storage_scope_module.storage_class,
     ) as cdv:
         cdv.wait_for_dv_success(timeout=TIMEOUT_3MIN)
-        with storage_utils.create_vm_from_dv(dv=cdv, start=True) as vm:
+        with storage_utils.create_vm_from_dv(dv=cdv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True, start=True) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -264,7 +268,7 @@ def test_upload_after_validate_aggregated_api_cert(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=dv_name,
-        size="1Gi",
+        size="10Gi",
         image_path=LOCAL_QCOW2_IMG_PATH,
         storage_class=storage_class_name_scope_module,
         insecure=True,
@@ -272,7 +276,7 @@ def test_upload_after_validate_aggregated_api_cert(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv, start=True) as vm:
+        with storage_utils.create_vm_from_dv(dv=dv, os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True,start=True) as vm:
             check_disk_count_in_vm(vm=vm)
 
 

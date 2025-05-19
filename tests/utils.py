@@ -25,6 +25,7 @@ from utilities.constants import (
     DISK_SERIAL,
     HCO_DEFAULT_CPU_MODEL_KEY,
     OS_FLAVOR_CIRROS,
+    OS_FLAVOR_FEDORA,
     RHSM_SECRET_NAME,
     TIMEOUT_1SEC,
     TIMEOUT_5SEC,
@@ -33,6 +34,7 @@ from utilities.constants import (
     TIMEOUT_30MIN,
     Images,
 )
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 from utilities.hco import ResourceEditorValidateHCOReconcile
 from utilities.infra import (
     ExecCommandOnPod,
@@ -533,7 +535,7 @@ def create_cirros_vm(
 ) -> Generator[VirtualMachineForTests, None, None]:
     artifactory_secret = get_artifactory_secret(namespace=namespace)
     artifactory_config_map = get_artifactory_config_map(namespace=namespace)
-
+    
     dv = DataVolume(
         name=dv_name,
         namespace=namespace,
@@ -546,19 +548,22 @@ def create_cirros_vm(
         secret=artifactory_secret,
         cert_configmap=artifactory_config_map.name,
     )
+    print("********",get_http_image_url(image_directory=Images.Cirros.DIR, image_name=Images.Cirros.QCOW2_IMG))
+  
     dv.to_dict()
     dv_metadata = dv.res["metadata"]
     with VirtualMachineForTests(
         client=client,
         name=vm_name,
         namespace=dv_metadata["namespace"],
-        os_flavor=OS_FLAVOR_CIRROS,
-        memory_guest=Images.Cirros.DEFAULT_MEMORY_SIZE,
+        os_flavor=OS_FLAVOR_FEDORA,
+        memory_guest=FEDORA_VM_MEMORY_SIZE,
         data_volume_template={"metadata": dv_metadata, "spec": dv.res["spec"]},
         node_selector=node,
         run_strategy=VirtualMachine.RunStrategy.ALWAYS,
         cpu_model=cpu_model,
         annotations=annotations,
+        wait_for_cloud_init=True
     ) as vm:
         if wait_running:
             running_vm(vm=vm, wait_for_interfaces=False)
