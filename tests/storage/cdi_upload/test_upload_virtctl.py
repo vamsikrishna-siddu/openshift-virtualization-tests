@@ -117,7 +117,7 @@ def test_image_upload_with_overridden_url(
     cdi_config_upload_proxy_overridden,
 ):
     pvc_name = "cnv-2217"
-    local_name = f"{tmpdir}/{Images.Cdi.QCOW2_IMG}"
+    local_name = f"{tmpdir}/{Images.Cirros.QCOW2_IMG}"
     get_downloaded_artifact(remote_name=f"{Images.Cdi.DIR}/{Images.Cdi.QCOW2_IMG}", local_name=local_name)
     with virtctl_upload_dv(
         namespace=namespace.name,

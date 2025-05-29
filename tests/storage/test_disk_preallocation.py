@@ -142,7 +142,7 @@ def test_preallocation_globally_dv_spec_without_preallocation(
                 "dv_name": "cnv-5741",
                 "source": "http",
                 "image": f"{Images.Cirros.DIR}/{Images.Cirros.QCOW2_IMG}",
-                "dv_size": "200Mi",
+                "dv_size": "6Gi",
                 "preallocation": False,
             },
             marks=pytest.mark.polarion("CNV-5741"),

@@ -180,8 +180,8 @@ class ArchImages:
             DEFAULT_DV_SIZE = "15Gi"
 
         class Cdi:
-            QCOW2_IMG = "Fedora-Cloud-Base-Generic-41-1.4.s390x.qcow2"
-            DIR = f"{BASE_IMAGES_DIR}/fedora-images"
+            QCOW2_IMG = "Fedora-qcow2.img"
+            DIR = f"{BASE_IMAGES_DIR}/cdi-test-images"
             DEFAULT_DV_SIZE = "10Gi"
      
 

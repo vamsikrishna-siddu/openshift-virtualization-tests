@@ -15,6 +15,10 @@ from pyhelper_utils.shell import run_command
 
 from utilities.storage import PodWithPVC, get_containers_for_pods_with_pvc
 
+from utilities.constants import(
+	TIMEOUT_12MIN
+)
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -29,7 +33,7 @@ def get_pvc_sha256sum(pvc_name, pvc_namespace):
         pvc_name=pvc_name,
         containers=get_containers_for_pods_with_pvc(volume_mode=volume_mode, pvc_name=pvc_name),
     ) as pod:
-        pod.wait_for_status(status=pod.Status.RUNNING)
+        pod.wait_for_status(status=pod.Status.RUNNING, timeout=TIMEOUT_12MIN)
         pvc_disk_img = "/pvc/disk.img"
         checksum = "sha256sum"
         command = (
