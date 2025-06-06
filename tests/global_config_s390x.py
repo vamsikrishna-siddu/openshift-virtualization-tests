@@ -14,7 +14,7 @@ global_config = pytest_testconfig.load_python(py_file="tests/global_config.py", 
 
 utilities.constants.OS_FLAVOR_CIRROS = "fedora"
 EXPECTED_CLUSTER_INSTANCE_TYPE_LABELS[PREFERENCE_STR] = f"rhel.9.{S390X}"
-
+     
 for _dir in dir():
     if not config:  # noqa: F821
         config: dict[str, Any] = {}

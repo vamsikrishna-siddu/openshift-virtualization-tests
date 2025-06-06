@@ -225,6 +225,9 @@ def data_volume(
 
     # Don't need URL for DVs that are not http
     url = f"{get_test_artifact_server_url()}{image}" if source == "http" else None
+    print("****url****",url)
+    #url = url+"rhel-95-s390x.qcow2"
+    #print("****url****",url)
 
     is_golden_image = False
     # For golden images; images are created once per module in
