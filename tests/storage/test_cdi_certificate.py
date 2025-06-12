@@ -324,7 +324,7 @@ def test_cert_exposure_rotation(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name="cnv-5708",
-        size="1Gi",
+        size="10Gi",
         storage_class=py_config["default_storage_class"],
         image_path=downloaded_cirros_image,
         insecure=False,

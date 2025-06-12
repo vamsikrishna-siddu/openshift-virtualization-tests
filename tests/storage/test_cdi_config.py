@@ -16,7 +16,8 @@ from tests.storage.utils import (
     upload_image_to_dv,
     upload_token_request,
 )
-from utilities.constants import CDI_UPLOADPROXY, Images, StorageClassNames
+from utilities.constants import CDI_UPLOADPROXY, Images, StorageClassNames, OS_FLAVOR_FEDORA
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 from utilities.hco import ResourceEditorValidateHCOReconcile
 from utilities.storage import (
     cdi_feature_gate_list_with_added_feature,
@@ -56,7 +57,7 @@ def cdiconfig_update(
 ):
     def _create_vm_check_disk_count(dv):
         dv.wait_for_dv_success()
-        with create_vm_from_dv(dv=dv) as vm_dv:
+        with create_vm_from_dv(dv=dv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True) as vm_dv:
             check_disk_count_in_vm(vm=vm_dv)
 
     with ResourceEditorValidateHCOReconcile(
@@ -289,7 +290,7 @@ def test_cdiconfig_changing_storage_class_default(
                     cert_configmap=configmap.name,
                 ) as dv:
                     dv.wait_for_dv_success()
-                    with create_vm_from_dv(dv=dv) as vm_dv:
+                    with create_vm_from_dv(dv=dv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True) as vm_dv:
                         check_disk_count_in_vm(vm=vm_dv)
 
 

@@ -563,7 +563,6 @@ def create_cirros_vm(
         run_strategy=VirtualMachine.RunStrategy.ALWAYS,
         cpu_model=cpu_model,
         annotations=annotations,
-        wait_for_cloud_init=True
     ) as vm:
         if wait_running:
             running_vm(vm=vm, wait_for_interfaces=False)

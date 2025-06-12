@@ -11,6 +11,13 @@ import yaml
 from ocp_resources.hostpath_provisioner import HostPathProvisioner
 from ocp_resources.storage_class import StorageClass
 
+from utilities.constants import (
+    OS_FLAVOR_FEDORA,
+    Images,
+)
+
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
+
 from tests.storage.hpp.utils import (
     check_disk_count_in_vm_and_image_location,
     cirros_dv_on_hpp,
@@ -147,7 +154,7 @@ def cirros_data_volume_on_hpp_basic(request, namespace):
 def vm_from_template_with_existing_dv_on_hpp_basic(
     cirros_data_volume_on_hpp_basic,
 ):
-    with create_vm_from_dv(dv=cirros_data_volume_on_hpp_basic) as vm:
+    with create_vm_from_dv(dv=cirros_data_volume_on_hpp_basic,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True) as vm:
         yield vm
 
 
@@ -165,7 +172,7 @@ def cirros_data_volume_on_hpp_pvc(request, namespace):
 def vm_from_template_with_existing_dv_on_hpp_pvc(
     cirros_data_volume_on_hpp_pvc,
 ):
-    with create_vm_from_dv(dv=cirros_data_volume_on_hpp_pvc) as vm:
+    with create_vm_from_dv(dv=cirros_data_volume_on_hpp_pvc,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True) as vm:
         yield vm
 
 

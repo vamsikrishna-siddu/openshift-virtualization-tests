@@ -231,7 +231,7 @@ def test_disk_image_after_clone(
         storage_class=storage_class,
     ) as cdv:
         cdv.wait_for_dv_success()
-        create_vm_and_verify_image_permission(dv=cdv)
+        create_vm_and_verify_image_permission(dv=cdv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True)
         assert_use_populator(
             pvc=cdv.pvc,
             storage_class=storage_class,

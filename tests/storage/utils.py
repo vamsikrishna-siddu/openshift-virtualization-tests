@@ -27,9 +27,11 @@ from timeout_sampler import TimeoutExpiredError, TimeoutSampler
 from utilities.constants import (
     CDI_UPLOADPROXY,
     TIMEOUT_2MIN,
+    OS_FLAVOR_FEDORA,
     TIMEOUT_30MIN,
     Images,
 )
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 from utilities.hco import ResourceEditorValidateHCOReconcile
 from utilities.infra import (
     cleanup_artifactory_secret_and_config_map,
@@ -244,7 +246,7 @@ def set_permissions(
 
 
 def create_vm_and_verify_image_permission(dv: DataVolume) -> None:
-    with create_vm_from_dv(dv=dv) as vm:
+    with create_vm_from_dv(dv=dv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True) as vm:
         running_vm(vm=vm, check_ssh_connectivity=False, wait_for_interfaces=False)
         verify_vm_disk_image_permission(vm=vm)
 
