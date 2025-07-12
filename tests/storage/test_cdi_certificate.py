@@ -22,16 +22,13 @@ from timeout_sampler import TimeoutSampler
 import tests.storage.utils as storage_utils
 from utilities.constants import (
     CDI_SECRETS,
+    OS_FLAVOR_FEDORA,
     TIMEOUT_1MIN,
     TIMEOUT_3MIN,
     TIMEOUT_5SEC,
     TIMEOUT_10MIN,
-    OS_FLAVOR_FEDORA,
     Images,
 )
-
-FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
-
 from utilities.hco import ResourceEditorValidateHCOReconcile
 from utilities.storage import (
     check_disk_count_in_vm,
@@ -42,6 +39,7 @@ from utilities.storage import (
 )
 from utilities.virt import running_vm
 
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 pytestmark = pytest.mark.post_upgrade
 
 
@@ -170,6 +168,7 @@ def dv_of_multi_storage_cirros_vm(
     ],
     indirect=True,
 )
+@pytest.mark.mystorage
 def test_dv_delete_from_vm(
     valid_cdi_certificates,
     namespace,
@@ -183,12 +182,13 @@ def test_dv_delete_from_vm(
     multi_storage_cirros_vm.stop(wait=True)
     assert dv_of_multi_storage_cirros_vm.delete(wait=True, timeout=TIMEOUT_1MIN), "DV was not deleted"
     # DV re-creation is triggered by VM
-    running_vm(vm=multi_storage_cirros_vm, wait_for_interfaces=False,wait_for_cloud_init=True)
+    running_vm(vm=multi_storage_cirros_vm, wait_for_interfaces=False, wait_for_cloud_init=True)
     check_disk_count_in_vm(vm=multi_storage_cirros_vm)
 
 
 @pytest.mark.sno
 @pytest.mark.polarion("CNV-3667")
+@pytest.mark.mystorage
 def test_upload_after_certs_renewal(
     skip_if_sc_volume_binding_mode_is_wffc,
     refresh_cdi_certificates,
@@ -211,7 +211,9 @@ def test_upload_after_certs_renewal(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True,start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=dv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -231,6 +233,7 @@ def test_upload_after_certs_renewal(
 )
 @pytest.mark.sno
 @pytest.mark.polarion("CNV-3678")
+@pytest.mark.mystorage
 def test_import_clone_after_certs_renewal(
     refresh_cdi_certificates,
     data_volume_multi_storage_scope_module,
@@ -248,7 +251,9 @@ def test_import_clone_after_certs_renewal(
         storage_class=data_volume_multi_storage_scope_module.storage_class,
     ) as cdv:
         cdv.wait_for_dv_success(timeout=TIMEOUT_3MIN)
-        with storage_utils.create_vm_from_dv(dv=cdv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True, start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=cdv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -276,7 +281,9 @@ def test_upload_after_validate_aggregated_api_cert(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv, os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True,start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=dv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -315,6 +322,7 @@ def downloaded_cirros_image(tmpdir):
 
 @pytest.mark.s390x
 @pytest.mark.polarion("CNV-5708")
+@pytest.mark.mystorage
 def test_cert_exposure_rotation(
     enabled_ca,
     updated_certconfig_in_hco_cr,

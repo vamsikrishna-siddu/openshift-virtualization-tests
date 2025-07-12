@@ -121,6 +121,7 @@ def test_preallocation_dv(
     ],
     indirect=True,
 )
+@pytest.mark.mystorage
 def test_preallocation_globally_dv_spec_without_preallocation(
     cdi_preallocation_enabled,
     data_volume_multi_storage_scope_module,
@@ -150,6 +151,7 @@ def test_preallocation_globally_dv_spec_without_preallocation(
     ],
     indirect=True,
 )
+@pytest.mark.mystorage
 def test_preallocation_globally_dv_spec_with_preallocation_false(
     cdi_preallocation_enabled,
     data_volume_multi_storage_scope_function,

@@ -19,9 +19,7 @@ from tests.storage.utils import (
     assert_use_populator,
     create_vm_and_verify_image_permission,
 )
-
-from utilities.constants import CDI_UPLOADPROXY, OS_FLAVOR_CIRROS, OS_FLAVOR_FEDORA, TIMEOUT_1MIN, Images
-FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
+from utilities.constants import CDI_UPLOADPROXY, OS_FLAVOR_FEDORA, TIMEOUT_1MIN, Images
 from utilities.storage import (
     ErrorMsg,
     check_disk_count_in_vm,
@@ -34,6 +32,8 @@ from utilities.storage import (
     virtctl_upload_dv,
 )
 from utilities.virt import VirtualMachineForTests, running_vm
+
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 
 pytestmark = pytest.mark.post_upgrade
 
@@ -62,6 +62,7 @@ def skip_no_reencrypt_route(upload_proxy_route):
 
 @pytest.mark.sno
 @pytest.mark.polarion("CNV-2192")
+@pytest.mark.mystorage
 def test_successful_virtctl_upload_no_url(namespace, tmpdir):
     local_name = f"{tmpdir}/{Images.Cdi.QCOW2_IMG}"
     get_downloaded_artifact(remote_name=f"{Images.Cdi.DIR}/{Images.Cdi.QCOW2_IMG}", local_name=local_name)
@@ -111,6 +112,7 @@ def test_successful_virtctl_upload_no_route(
 
 @pytest.mark.sno
 @pytest.mark.polarion("CNV-2217")
+@pytest.mark.mystorage
 def test_image_upload_with_overridden_url(
     namespace,
     tmpdir,
@@ -158,6 +160,7 @@ def test_virtctl_image_upload_with_ca(
 @pytest.mark.smoke
 @pytest.mark.sno
 @pytest.mark.polarion("CNV-3724")
+@pytest.mark.mystorage
 def test_virtctl_image_upload_dv(
     skip_if_sc_volume_binding_mode_is_wffc,
     download_image,
@@ -179,7 +182,9 @@ def test_virtctl_image_upload_dv(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv,os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True, start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=dv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -257,6 +262,7 @@ def test_virtctl_image_upload_pvc(download_image, namespace, storage_class_name_
 
 @pytest.mark.sno
 @pytest.mark.polarion("CNV-3725")
+@pytest.mark.mystorage
 def test_virtctl_image_upload_with_exist_dv(download_image, namespace, storage_class_name_scope_module):
     """
     Check that virtctl is able to upload a local disk image to an existing DataVolume
@@ -281,7 +287,13 @@ def test_virtctl_image_upload_with_exist_dv(download_image, namespace, storage_c
         ) as res:
             check_upload_virtctl_result(result=res)
             if not sc_volume_binding_mode_is_wffc(sc=storage_class_name_scope_module):
-                with storage_utils.create_vm_from_dv(dv=dv, os_flavor=OS_FLAVOR_FEDORA,  memory_guest=FEDORA_VM_MEMORY_SIZE,wait_for_cloud_init=True,start=True) as vm:
+                with storage_utils.create_vm_from_dv(
+                    dv=dv,
+                    os_flavor=OS_FLAVOR_FEDORA,
+                    memory_guest=FEDORA_VM_MEMORY_SIZE,
+                    wait_for_cloud_init=True,
+                    start=True,
+                ) as vm:
                     check_disk_count_in_vm(vm=vm)
 
 
@@ -313,6 +325,7 @@ def empty_pvc(
 
 @pytest.mark.sno
 @pytest.mark.polarion("CNV-3727")
+@pytest.mark.mystorage
 def test_virtctl_image_upload_with_exist_pvc(
     empty_pvc,
     download_image,
@@ -342,7 +355,7 @@ def test_virtctl_image_upload_with_exist_pvc(
                 memory_guest=FEDORA_VM_MEMORY_SIZE,
                 pvc=empty_pvc,
             ) as vm:
-                running_vm(vm=vm, wait_for_interfaces=False,wait_for_cloud_init=True)
+                running_vm(vm=vm, wait_for_interfaces=False, wait_for_cloud_init=True)
                 check_disk_count_in_vm(vm=vm)
 
 

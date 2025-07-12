@@ -59,6 +59,7 @@ class TestCheckupPositive:
         )
 
     @pytest.mark.polarion("CNV-10709")
+    @pytest.mark.mystorage
     def test_ocs_rbd_non_virt_vm_exist(
         self,
         skip_if_no_ocs_rbd_non_virt_sc,
