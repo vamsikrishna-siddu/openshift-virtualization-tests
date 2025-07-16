@@ -7,9 +7,9 @@ Automatic refresh of CDI certificates test suite
 import datetime
 import logging
 import subprocess
-import time
 
 import pytest
+from dateutil import parser
 from ocp_resources.cdi import CDI
 from ocp_resources.config_map import ConfigMap
 from ocp_resources.datavolume import DataVolume
@@ -79,20 +79,17 @@ def valid_cdi_certificates(secrets):
     auth.openshift.io/certificate-not-after: "2020-04-24T04:02:12Z"
     auth.openshift.io/certificate-not-before: "2020-04-22T04:02:11Z"
     """
+    now = datetime.datetime.now(datetime.timezone.utc)
+
     for secret in secrets:
         for cdi_secret in CDI_SECRETS:
             if secret.name == cdi_secret:
                 LOGGER.info(f"Checking {cdi_secret}...")
 
-                start = secret.certificate_not_before
-                start_timestamp = time.mktime(time.strptime(start, RFC3339_FORMAT))
+                start = parser.isoparse(secret.certificate_not_before)
+                end = parser.isoparse(secret.certificate_not_after)
 
-                end = secret.certificate_not_after
-                end_timestamp = time.mktime(time.strptime(end, RFC3339_FORMAT))
-
-                current_time = datetime.datetime.now().strftime(RFC3339_FORMAT)
-                current_timestamp = time.mktime(time.strptime(current_time, RFC3339_FORMAT))
-                assert start_timestamp <= current_timestamp <= end_timestamp, f"Certificate of {cdi_secret} expired"
+                assert start <= now <= end, f"Certificate of {cdi_secret} expired"
 
 
 @pytest.fixture()

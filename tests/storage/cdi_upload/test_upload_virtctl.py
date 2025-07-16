@@ -148,7 +148,7 @@ def test_virtctl_image_upload_with_ca(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=pvc_name,
-        size="1Gi",
+        size="10Gi",
         storage_class=py_config["default_storage_class"],
         image_path=local_path,
     ) as res:

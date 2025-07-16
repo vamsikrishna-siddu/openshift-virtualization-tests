@@ -284,7 +284,7 @@ def _upload_image(dv_name, namespace, storage_class, local_name, size=None):
     """
     Upload image function for the use of other tests
     """
-    size = size or "3Gi"
+    size = size or "10Gi"
     with utilities.storage.create_dv(
         source="upload",
         dv_name=dv_name,
