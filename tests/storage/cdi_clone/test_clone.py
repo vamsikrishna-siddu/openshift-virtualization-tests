@@ -14,7 +14,6 @@ from tests.storage.utils import (
     create_windows_vm_validate_guest_agent_info,
 )
 from utilities.constants import (
-    OS_FLAVOR_CIRROS,
     OS_FLAVOR_FEDORA,
     OS_FLAVOR_WINDOWS,
     QUARANTINED,
@@ -36,6 +35,7 @@ from utilities.virt import (
 )
 
 WINDOWS_CLONE_TIMEOUT = TIMEOUT_40MIN
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 
 
 def create_vm_from_clone_dv_template(
@@ -51,9 +51,9 @@ def create_vm_from_clone_dv_template(
     with VirtualMachineForTests(
         name=vm_name,
         namespace=namespace_name,
-        os_flavor=OS_FLAVOR_CIRROS,
+        os_flavor=OS_FLAVOR_FEDORA,
         client=client,
-        memory_guest=Images.Cirros.DEFAULT_MEMORY_SIZE,
+        memory_guest=Images.Fedora.DEFAULT_MEMORY_SIZE,
         data_volume_template=data_volume_template_dict(
             target_dv_name=dv_name,
             target_dv_namespace=namespace_name,
@@ -142,7 +142,11 @@ def test_successful_vm_restart_with_cloned_dv(
     ) as cdv:
         cdv.wait_for_dv_success(timeout=TIMEOUT_10MIN)
         with create_vm_from_dv(
-            dv=cdv, vm_name="fedora-vm", os_flavor=OS_FLAVOR_FEDORA, memory_guest=Images.Fedora.DEFAULT_MEMORY_SIZE
+            dv=cdv,
+            vm_name="fedora-vm",
+            os_flavor=OS_FLAVOR_FEDORA,
+            memory_guest=FEDORA_VM_MEMORY_SIZE,
+            wait_for_cloud_init=True,
         ) as vm_dv:
             restart_vm_wait_for_running_vm(vm=vm_dv, wait_for_interfaces=False)
             check_disk_count_in_vm(vm=vm_dv)
@@ -231,7 +235,9 @@ def test_disk_image_after_clone(
         storage_class=storage_class,
     ) as cdv:
         cdv.wait_for_dv_success()
-        create_vm_and_verify_image_permission(dv=cdv)
+        create_vm_and_verify_image_permission(
+            dv=cdv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True
+        )
         assert_use_populator(
             pvc=cdv.pvc,
             storage_class=storage_class,
@@ -278,7 +284,11 @@ def test_successful_snapshot_clone(
         cdv.wait_for_dv_success()
         if OS_FLAVOR_WINDOWS not in data_volume_snapshot_capable_storage_scope_function.url.split("/")[-1]:
             with create_vm_from_dv(
-                dv=cdv, vm_name="fedora-vm", os_flavor=OS_FLAVOR_FEDORA, memory_guest=Images.Fedora.DEFAULT_MEMORY_SIZE
+                dv=cdv,
+                vm_name="fedora-vm",
+                os_flavor=OS_FLAVOR_FEDORA,
+                memory_guest=FEDORA_VM_MEMORY_SIZE,
+                wait_for_cloud_init=True,
             ) as vm_dv:
                 check_disk_count_in_vm(vm=vm_dv)
         pvc = cdv.pvc
@@ -292,7 +302,6 @@ def test_successful_snapshot_clone(
 
 @pytest.mark.gating
 @pytest.mark.polarion("CNV-5607")
-@pytest.mark.s390x
 def test_clone_from_fs_to_block_using_dv_template(
     skip_test_if_no_filesystem_sc,
     skip_test_if_no_block_sc,

@@ -30,6 +30,7 @@ from tests.storage.utils import (
 )
 from utilities import console
 from utilities.constants import (
+    OS_FLAVOR_FEDORA,
     OS_FLAVOR_RHEL,
     TIMEOUT_1MIN,
     TIMEOUT_5MIN,
@@ -55,6 +56,7 @@ from utilities.virt import running_vm
 pytestmark = [
     pytest.mark.post_upgrade,
 ]
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 
 LOGGER = logging.getLogger(__name__)
 
@@ -539,7 +541,7 @@ def test_blank_disk_import_validate_status(data_volume_multi_storage_scope_funct
                 "dv_name": "cnv-3065",
                 "file_name": Images.Cdi.QCOW2_IMG,
                 "source": HTTPS,
-                "size": "100Mi",
+                "size": "6Gi",
                 "configmap_name": INTERNAL_HTTP_CONFIGMAP_NAME,
             },
             marks=pytest.mark.polarion("CNV-3065"),
@@ -550,11 +552,13 @@ def test_blank_disk_import_validate_status(data_volume_multi_storage_scope_funct
 @pytest.mark.sno
 def test_disk_falloc(internal_http_configmap, dv_from_http_import):
     dv_from_http_import.wait_for_dv_success()
-    with create_vm_from_dv(dv=dv_from_http_import) as vm_dv:
+    with create_vm_from_dv(
+        dv=dv_from_http_import, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE
+    ) as vm_dv:
         with console.Console(vm=vm_dv) as vm_console:
             LOGGER.info("Fill disk space.")
-            vm_console.sendline("dd if=/dev/zero of=file bs=1M")
-            vm_console.expect("dd: writing 'file': No space left on device", timeout=TIMEOUT_1MIN)
+            vm_console.sendline("dd if=/dev/urandom of=file bs=1M")
+            vm_console.expect("dd: error writing 'file': No space left on device", timeout=TIMEOUT_12MIN)
 
 
 @pytest.mark.destructive

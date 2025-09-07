@@ -19,13 +19,17 @@ from tests.storage.hpp.utils import (
     verify_hpp_cr_installed_successfully,
 )
 from tests.storage.utils import create_vm_from_dv
+from utilities.constants import (
+    OS_FLAVOR_FEDORA,
+    Images,
+)
 from utilities.storage import HppCsiStorageClass
 
 LOGGER = logging.getLogger(__name__)
 
 SC_NAME = HppCsiStorageClass.Name
 SC_POOL = HppCsiStorageClass.StoragePool
-
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 STORAGE_CLASS_TO_STORAGE_POOL_MAPPING = {
     SC_NAME.HOSTPATH_CSI_BASIC: SC_POOL.HOSTPATH_CSI_BASIC,
     SC_NAME.HOSTPATH_CSI_PVC_TEMPLATE_OCS_FS: SC_POOL.HOSTPATH_CSI_PVC_TEMPLATE_OCS_FS,
@@ -147,7 +151,12 @@ def cirros_data_volume_on_hpp_basic(request, namespace):
 def vm_from_template_with_existing_dv_on_hpp_basic(
     cirros_data_volume_on_hpp_basic,
 ):
-    with create_vm_from_dv(dv=cirros_data_volume_on_hpp_basic) as vm:
+    with create_vm_from_dv(
+        dv=cirros_data_volume_on_hpp_basic,
+        os_flavor=OS_FLAVOR_FEDORA,
+        memory_guest=FEDORA_VM_MEMORY_SIZE,
+        wait_for_cloud_init=True,
+    ) as vm:
         yield vm
 
 
@@ -165,7 +174,12 @@ def cirros_data_volume_on_hpp_pvc(request, namespace):
 def vm_from_template_with_existing_dv_on_hpp_pvc(
     cirros_data_volume_on_hpp_pvc,
 ):
-    with create_vm_from_dv(dv=cirros_data_volume_on_hpp_pvc) as vm:
+    with create_vm_from_dv(
+        dv=cirros_data_volume_on_hpp_pvc,
+        os_flavor=OS_FLAVOR_FEDORA,
+        memory_guest=FEDORA_VM_MEMORY_SIZE,
+        wait_for_cloud_init=True,
+    ) as vm:
         yield vm
 
 

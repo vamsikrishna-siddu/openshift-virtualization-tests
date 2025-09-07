@@ -24,7 +24,11 @@ from tests.storage.restricted_namespace_cloning.constants import (
 )
 from tests.storage.restricted_namespace_cloning.utils import create_dv_negative, verify_snapshot_used_namespace_transfer
 from tests.storage.utils import verify_vm_disk_image_permission
+from utilities.constants import OS_FLAVOR_FEDORA, Images
 from utilities.storage import create_vm_from_dv
+
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -94,7 +98,12 @@ def test_user_permissions_positive(
 ):
     verify_snapshot_used_namespace_transfer(cdv=dv_destination_cloned_from_pvc, unprivileged_client=unprivileged_client)
     if requested_verify_image_permissions:
-        with create_vm_from_dv(dv=dv_destination_cloned_from_pvc) as vm:
+        with create_vm_from_dv(
+            dv=dv_destination_cloned_from_pvc,
+            os_flavor=OS_FLAVOR_FEDORA,
+            memory_guest=FEDORA_VM_MEMORY_SIZE,
+            wait_for_cloud_init=True,
+        ) as vm:
             if (
                 storage_class_matrix__module__[storage_class_name_scope_module]["volume_mode"]
                 == DataVolume.VolumeMode.FILE

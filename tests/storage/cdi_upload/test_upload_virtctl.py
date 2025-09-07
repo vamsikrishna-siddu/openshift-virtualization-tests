@@ -19,7 +19,7 @@ from tests.storage.utils import (
     assert_use_populator,
     create_vm_and_verify_image_permission,
 )
-from utilities.constants import CDI_UPLOADPROXY, OS_FLAVOR_CIRROS, TIMEOUT_1MIN, Images
+from utilities.constants import CDI_UPLOADPROXY, OS_FLAVOR_FEDORA, TIMEOUT_1MIN, Images
 from utilities.storage import (
     ErrorMsg,
     check_disk_count_in_vm,
@@ -32,6 +32,8 @@ from utilities.storage import (
     virtctl_upload_dv,
 )
 from utilities.virt import VirtualMachineForTests, running_vm
+
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 
 pytestmark = pytest.mark.post_upgrade
 
@@ -67,7 +69,7 @@ def test_successful_virtctl_upload_no_url(namespace, tmpdir):
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=pvc_name,
-        size="1Gi",
+        size="10Gi",
         storage_class=py_config["default_storage_class"],
         image_path=local_name,
         insecure=True,
@@ -115,12 +117,12 @@ def test_image_upload_with_overridden_url(
     cdi_config_upload_proxy_overridden,
 ):
     pvc_name = "cnv-2217"
-    local_name = f"{tmpdir}/{Images.Cdi.QCOW2_IMG}"
+    local_name = f"{tmpdir}/{Images.Cirros.QCOW2_IMG}"
     get_downloaded_artifact(remote_name=f"{Images.Cdi.DIR}/{Images.Cdi.QCOW2_IMG}", local_name=local_name)
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=pvc_name,
-        size="1Gi",
+        size="10Gi",
         storage_class=py_config["default_storage_class"],
         image_path=local_name,
         insecure=True,
@@ -144,7 +146,7 @@ def test_virtctl_image_upload_with_ca(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=pvc_name,
-        size="1Gi",
+        size="10Gi",
         storage_class=py_config["default_storage_class"],
         image_path=local_path,
     ) as res:
@@ -169,7 +171,7 @@ def test_virtctl_image_upload_dv(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=dv_name,
-        size=DEFAULT_DV_SIZE,
+        size="10Gi",
         image_path=LOCAL_PATH,
         storage_class=storage_class_name_scope_module,
         insecure=True,
@@ -177,7 +179,9 @@ def test_virtctl_image_upload_dv(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv, start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=dv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -264,7 +268,7 @@ def test_virtctl_image_upload_with_exist_dv(download_image, namespace, storage_c
         source="upload",
         dv_name=dv_name,
         namespace=namespace.name,
-        size="1Gi",
+        size="10Gi",
         storage_class=storage_class_name_scope_module,
     ) as dv:
         dv.wait_for_status(status=DataVolume.Status.UPLOAD_READY, timeout=120)
@@ -279,7 +283,13 @@ def test_virtctl_image_upload_with_exist_dv(download_image, namespace, storage_c
         ) as res:
             check_upload_virtctl_result(result=res)
             if not sc_volume_binding_mode_is_wffc(sc=storage_class_name_scope_module):
-                with storage_utils.create_vm_from_dv(dv=dv, start=True) as vm:
+                with storage_utils.create_vm_from_dv(
+                    dv=dv,
+                    os_flavor=OS_FLAVOR_FEDORA,
+                    memory_guest=FEDORA_VM_MEMORY_SIZE,
+                    wait_for_cloud_init=True,
+                    start=True,
+                ) as vm:
                     check_disk_count_in_vm(vm=vm)
 
 
@@ -296,7 +306,7 @@ def empty_pvc(
         storage_class=storage_class_name_scope_module,
         volume_mode=storage_class_matrix__module__[storage_class_name_scope_module]["volume_mode"],
         accessmodes=storage_class_matrix__module__[storage_class_name_scope_module]["access_mode"],
-        size="1Gi",
+        size="10Gi",
         hostpath_node=worker_node1.name
         if sc_is_hpp_with_immediate_volume_binding(sc=storage_class_name_scope_module)
         else None,
@@ -324,7 +334,7 @@ def test_virtctl_image_upload_with_exist_pvc(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=empty_pvc.name,
-        size=DEFAULT_DV_SIZE,
+        size="10Gi",
         pvc=True,
         image_path=LOCAL_PATH,
         storage_class=storage_class_name_scope_module,
@@ -336,11 +346,11 @@ def test_virtctl_image_upload_with_exist_pvc(
             with VirtualMachineForTests(
                 name="cnv-3727-vm",
                 namespace=empty_pvc.namespace,
-                os_flavor=OS_FLAVOR_CIRROS,
-                memory_guest=Images.Cirros.DEFAULT_MEMORY_SIZE,
+                os_flavor=OS_FLAVOR_FEDORA,
+                memory_guest=FEDORA_VM_MEMORY_SIZE,
                 pvc=empty_pvc,
             ) as vm:
-                running_vm(vm=vm, wait_for_interfaces=False)
+                running_vm(vm=vm, wait_for_interfaces=False, wait_for_cloud_init=True)
                 check_disk_count_in_vm(vm=vm)
 
 
@@ -359,7 +369,7 @@ def test_virtctl_image_upload_with_exist_pvc_image(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=pvc_name,
-        size=DEFAULT_DV_SIZE,
+        size="10Gi",
         image_path=LOCAL_PATH,
         storage_class=storage_class_name_scope_module,
         insecure=True,
@@ -368,7 +378,7 @@ def test_virtctl_image_upload_with_exist_pvc_image(
         with virtctl_upload_dv(
             namespace=namespace.name,
             name=pvc_name,
-            size=DEFAULT_DV_SIZE,
+            size="10Gi",
             image_path=LOCAL_PATH,
             storage_class=storage_class_name_scope_module,
             insecure=True,

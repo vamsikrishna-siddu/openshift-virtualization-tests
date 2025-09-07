@@ -26,6 +26,7 @@ from timeout_sampler import TimeoutExpiredError, TimeoutSampler
 
 from utilities.constants import (
     CDI_UPLOADPROXY,
+    OS_FLAVOR_FEDORA,
     TIMEOUT_2MIN,
     TIMEOUT_30MIN,
     Images,
@@ -54,6 +55,7 @@ from utilities.virt import (
 )
 
 LOGGER = logging.getLogger(__name__)
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 
 
 @contextmanager
@@ -86,7 +88,7 @@ def upload_image_to_dv(dv_name, storage_ns_name, storage_class, client, consume_
         source="upload",
         dv_name=dv_name,
         namespace=storage_ns_name,
-        size="3Gi",
+        size="6Gi",
         storage_class=storage_class,
         client=client,
         consume_wffc=consume_wffc,
@@ -244,7 +246,9 @@ def set_permissions(
 
 
 def create_vm_and_verify_image_permission(dv: DataVolume) -> None:
-    with create_vm_from_dv(dv=dv) as vm:
+    with create_vm_from_dv(
+        dv=dv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True
+    ) as vm:
         running_vm(vm=vm, check_ssh_connectivity=False, wait_for_interfaces=False)
         verify_vm_disk_image_permission(vm=vm)
 

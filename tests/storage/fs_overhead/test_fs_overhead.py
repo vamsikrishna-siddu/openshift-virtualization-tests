@@ -76,7 +76,7 @@ def uploaded_cirros_dv(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=dv_name,
-        size=Images.Cirros.DEFAULT_DV_SIZE,
+        size="10Gi",
         image_path=downloaded_cirros_image_full_path,
         storage_class=storage_class_with_filesystem_volume_mode,
         volume_mode=DataVolume.VolumeMode.FILE,
@@ -93,7 +93,11 @@ def test_import_vm_with_specify_fs_overhead(updated_fs_overhead_20_with_hco, vm_
             pvc=PersistentVolumeClaim(name=vm_metadata["name"], namespace=vm_metadata["namespace"])
         ),
         requested_size=bitmath.GiB(
-            int(vm_for_fs_overhead_test.data_volume_template["spec"]["storage"]["resources"]["requests"]["storage"][0])
+            int(
+                vm_for_fs_overhead_test.data_volume_template["spec"]["storage"]["resources"]["requests"][
+                    "storage"
+                ].replace("Gi", "")
+            )
         ),
     )
 
@@ -105,5 +109,5 @@ def test_upload_dv_with_specify_fs_overhead(
 ):
     assert_fs_overhead_added(
         actual_size=get_pvc_size_gib(pvc=uploaded_cirros_dv.pvc),
-        requested_size=bitmath.GiB(int(Images.Cirros.DEFAULT_DV_SIZE[0])),
+        requested_size=bitmath.GiB(int(Images.Cirros.DEFAULT_DV_SIZE.replace("Gi", ""))),
     )

@@ -2109,7 +2109,7 @@ def generated_ssh_key_for_vm_access(ssh_key_tmpdir_scope_session):
 
 @pytest.fixture(scope="session")
 def rhel9_http_image_url():
-    return get_http_image_url(image_directory=Images.Rhel.DIR, image_name=Images.Rhel.RHEL9_4_IMG)
+    return get_http_image_url(image_directory=Images.Rhel.DIR, image_name=Images.Rhel.RHEL9_5_IMG)
 
 
 @pytest.fixture(scope="session")

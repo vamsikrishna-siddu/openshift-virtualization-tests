@@ -1062,6 +1062,9 @@ class VirtualMachineForTests(VirtualMachine):
         self.username = self.username or self.login_params["username"]
         self.password = self.password or self.login_params["password"]
 
+        print(f"Username: {self.username}")
+        print(f"Password: {self.password}")
+
         LOGGER.info(f"SSH command: ssh -o 'ProxyCommand={self.virtctl_port_forward_cmd}' {self.username}@{self.name}")
         host = Host(hostname=self.name)
         # For SSH using a key, the public key needs to reside on the server.

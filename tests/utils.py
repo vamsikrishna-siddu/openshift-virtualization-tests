@@ -24,7 +24,7 @@ from timeout_sampler import TimeoutExpiredError, TimeoutSampler
 from utilities.constants import (
     DISK_SERIAL,
     HCO_DEFAULT_CPU_MODEL_KEY,
-    OS_FLAVOR_CIRROS,
+    OS_FLAVOR_FEDORA,
     RHSM_SECRET_NAME,
     TIMEOUT_1SEC,
     TIMEOUT_5SEC,
@@ -58,6 +58,7 @@ NOT_PUBLISHED_MESSAGE = (
     "OpenShift Container Platform version"
 )
 LOGGER = logging.getLogger(__name__)
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 
 
 def create_vms(
@@ -546,14 +547,16 @@ def create_cirros_vm(
         secret=artifactory_secret,
         cert_configmap=artifactory_config_map.name,
     )
+    print("********", get_http_image_url(image_directory=Images.Cirros.DIR, image_name=Images.Cirros.QCOW2_IMG))
+
     dv.to_dict()
     dv_metadata = dv.res["metadata"]
     with VirtualMachineForTests(
         client=client,
         name=vm_name,
         namespace=dv_metadata["namespace"],
-        os_flavor=OS_FLAVOR_CIRROS,
-        memory_guest=Images.Cirros.DEFAULT_MEMORY_SIZE,
+        os_flavor=OS_FLAVOR_FEDORA,
+        memory_guest=FEDORA_VM_MEMORY_SIZE,
         data_volume_template={"metadata": dv_metadata, "spec": dv.res["spec"]},
         node_selector=node,
         run_strategy=VirtualMachine.RunStrategy.ALWAYS,

@@ -24,6 +24,7 @@ import utilities.storage
 from tests.os_params import RHEL_LATEST
 from utilities.constants import (
     CDI_UPLOADPROXY,
+    OS_FLAVOR_FEDORA,
     QUARANTINED,
     TIMEOUT_1MIN,
     TIMEOUT_3MIN,
@@ -32,6 +33,9 @@ from utilities.constants import (
     Images,
 )
 from utilities.storage import check_disk_count_in_vm, get_downloaded_artifact
+
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
+
 
 LOGGER = logging.getLogger(__name__)
 HTTP_UNAUTHORIZED = 401
@@ -168,6 +172,7 @@ def test_successful_upload_with_supported_formats(
     local_name,
     unprivileged_client,
 ):
+    print(f"*******Remote image path********: {remote_name}")
     local_name = f"{tmpdir}/{local_name}"
     get_downloaded_artifact(remote_name=remote_name, local_name=local_name)
     with storage_utils.upload_image_to_dv(
@@ -178,7 +183,12 @@ def test_successful_upload_with_supported_formats(
     ) as dv:
         storage_utils.upload_token_request(storage_ns_name=namespace.name, pvc_name=dv.pvc.name, data=local_name)
         dv.wait_for_dv_success()
-        with storage_utils.create_vm_from_dv(dv=dv) as vm_dv:
+        with storage_utils.create_vm_from_dv(
+            dv=dv,
+            os_flavor=OS_FLAVOR_FEDORA,
+            memory_guest=FEDORA_VM_MEMORY_SIZE,
+            wait_for_cloud_init=True,
+        ) as vm_dv:
             check_disk_count_in_vm(vm=vm_dv)
 
 
@@ -193,7 +203,7 @@ def test_successful_upload_with_supported_formats(
             {
                 "dv_name": "cnv-2018",
                 "source": "upload",
-                "dv_size": "3Gi",
+                "dv_size": "10Gi",
                 "wait": False,
             },
             marks=(pytest.mark.polarion("CNV-2018")),
@@ -274,7 +284,7 @@ def _upload_image(dv_name, namespace, storage_class, local_name, size=None):
     """
     Upload image function for the use of other tests
     """
-    size = size or "3Gi"
+    size = size or "10Gi"
     with utilities.storage.create_dv(
         source="upload",
         dv_name=dv_name,

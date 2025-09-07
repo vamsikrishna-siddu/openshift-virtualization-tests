@@ -16,6 +16,7 @@ from tests.storage.constants import CIRROS_QCOW2_IMG
 from tests.storage.utils import create_vm_from_dv, upload_image_to_dv, upload_token_request
 from utilities.constants import (
     OS_FLAVOR_CIRROS,
+    OS_FLAVOR_FEDORA,
     TIMEOUT_2MIN,
     TIMEOUT_4MIN,
     TIMEOUT_10SEC,
@@ -44,7 +45,7 @@ pytestmark = [
     pytest.mark.usefixtures("enable_wffc_feature_gate"),
     pytest.mark.post_upgrade,
 ]
-
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 LOGGER = logging.getLogger(__name__)
 
 
@@ -159,6 +160,9 @@ def uploaded_dv_via_virtctl_wffc(
 def vm_from_uploaded_dv(namespace, uploaded_dv_via_virtctl_wffc, uploaded_wffc_dv):
     with create_vm_from_dv(
         dv=uploaded_wffc_dv,
+        os_flavor=OS_FLAVOR_FEDORA,
+        memory_guest=FEDORA_VM_MEMORY_SIZE,
+        wait_for_cloud_init=True,
         vm_name=WFFC_DV_NAME,
         start=False,
     ) as vm_dv:
@@ -275,7 +279,13 @@ def test_wffc_upload_dv_via_token(
     ) as dv:
         upload_token_request(storage_ns_name=namespace.name, pvc_name=dv.pvc.name, data=local_name)
         dv.wait_for_dv_success()
-        with create_vm_from_dv(dv=dv, vm_name=dv_name) as vm_dv:
+        with create_vm_from_dv(
+            dv=dv,
+            vm_name=dv_name,
+            os_flavor=OS_FLAVOR_FEDORA,
+            memory_guest=FEDORA_VM_MEMORY_SIZE,
+            wait_for_cloud_init=True,
+        ) as vm_dv:
             check_disk_count_in_vm(vm=vm_dv)
 
 
@@ -293,7 +303,11 @@ def test_wffc_upload_dv_via_token(
 @pytest.mark.s390x
 def test_wffc_import_http_dv(data_volume_multi_wffc_storage_scope_module):
     with create_vm_from_dv(
-        dv=data_volume_multi_wffc_storage_scope_module, vm_name=data_volume_multi_wffc_storage_scope_module.name
+        dv=data_volume_multi_wffc_storage_scope_module,
+        vm_name=data_volume_multi_wffc_storage_scope_module.name,
+        os_flavor=OS_FLAVOR_FEDORA,
+        memory_guest=FEDORA_VM_MEMORY_SIZE,
+        wait_for_cloud_init=True,
     ) as vm_dv:
         check_disk_count_in_vm(vm=vm_dv)
 
@@ -321,7 +335,13 @@ def test_wffc_clone_dv(data_volume_multi_wffc_storage_scope_module):
         consume_wffc=True,
     ) as cdv:
         cdv.wait_for_dv_success(timeout=TIMEOUT_4MIN)
-        with create_vm_from_dv(dv=cdv, vm_name=cdv.name) as vm_dv:
+        with create_vm_from_dv(
+            dv=cdv,
+            vm_name=cdv.name,
+            os_flavor=OS_FLAVOR_FEDORA,
+            memory_guest=FEDORA_VM_MEMORY_SIZE,
+            wait_for_cloud_init=True,
+        ) as vm_dv:
             check_disk_count_in_vm(vm=vm_dv)
 
 

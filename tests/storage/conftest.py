@@ -42,7 +42,7 @@ from utilities.constants import (
     CDI_UPLOADPROXY,
     CNV_TEST_SERVICE_ACCOUNT,
     CNV_TESTS_CONTAINER,
-    OS_FLAVOR_CIRROS,
+    OS_FLAVOR_FEDORA,
     SECURITY_CONTEXT,
     Images,
 )
@@ -82,7 +82,7 @@ INTERNAL_HTTP_TEMPLATE = {
         "containers": [
             {
                 "name": "http",
-                "image": "quay.io/openshift-cnv/qe-cnv-tests-internal-http:v1.1.0",
+                "image": "quay.io/kcrane/qe-cnv-tests-internal-http:v1.0.0",
                 "imagePullPolicy": "Always",
                 "command": ["/usr/sbin/nginx"],
                 "readinessProbe": {
@@ -489,8 +489,8 @@ def cirros_vm_for_snapshot(
         client=admin_client,
         name=cirros_vm_name,
         namespace=dv_metadata["namespace"],
-        os_flavor=OS_FLAVOR_CIRROS,
-        memory_guest=Images.Cirros.DEFAULT_MEMORY_SIZE,
+        os_flavor=OS_FLAVOR_FEDORA,
+        memory_guest=Images.Fedora.DEFAULT_MEMORY_SIZE,
         data_volume_template={
             "metadata": dv_metadata,
             "spec": cirros_dv_for_snapshot_dict["spec"],

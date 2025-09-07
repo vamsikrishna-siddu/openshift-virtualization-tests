@@ -34,7 +34,6 @@ from libs.infra.images import (
 )
 from utilities.architecture import get_cluster_architecture
 
-# Images
 NON_EXISTS_IMAGE = "non-exists-image-test-cnao-alerts"
 
 AMD_64 = "amd64"
@@ -129,7 +128,7 @@ class ArchImages:
             DEFAULT_MEMORY_SIZE="1Gi",
         )
 
-        Rhel = Rhel(RHEL9_5_IMG="rhel-95-s390x.qcow2")
+        Rhel = Rhel(RHEL9_5_IMG="rhel-95-s390x.qcow2", RHEL8_0_IMG="rhel-95-s390x.qcow2")
         Rhel.LATEST_RELEASE_STR = Rhel.RHEL9_5_IMG
 
         Fedora = Fedora(
@@ -145,7 +144,7 @@ class ArchImages:
         Cdi = Cdi(
             # TODO: S390X does not support Cirros; this is a workaround until tests are moved to Fedora
             QCOW2_IMG="Fedora-qcow2.img",
-            DIR=f"{BASE_IMAGES_DIR}/fedora-images",
+            DIR=f"{BASE_IMAGES_DIR}/cdi-test-images",
             DEFAULT_DV_SIZE="10Gi",
         )
 
@@ -159,6 +158,9 @@ Images = getattr(ArchImages, get_cluster_architecture().upper())
 # Virtctl constants
 VIRTCTL = "virtctl"
 VIRTCTL_CLI_DOWNLOADS = f"{VIRTCTL}-clidownloads-kubevirt-hyperconverged"
+AMD_64 = "amd64"
+ARM_64 = "arm64"
+S390X = "s390x"
 #  Network constants
 SRIOV = "sriov"
 IP_FAMILY_POLICY_PREFER_DUAL_STACK = "PreferDualStack"
@@ -217,7 +219,10 @@ TIMEOUT_12HRS = 12 * 60 * 60
 TCP_TIMEOUT_30SEC = 30.0
 
 #  OS constants
-OS_FLAVOR_CIRROS = "cirros"
+if get_cluster_architecture() == "S390X":
+    OS_FLAVOR_CIRROS = "fedora"
+else:
+    OS_FLAVOR_CIRROS = "cirros"
 OS_FLAVOR_WINDOWS = "win"
 OS_FLAVOR_RHEL = "rhel"
 OS_FLAVOR_FEDORA = "fedora"
@@ -282,6 +287,7 @@ CDI_CONFIGMAPS = [
 # Miscellaneous constants
 UTILITY = "utility"
 WORKERS_TYPE = "WORKERS_TYPE"
+FILTER_BY_OS_OPTION = f"filter-by-os=linux/{AMD_64}"
 QUARANTINED = "quarantined"
 SETUP_ERROR = "setup_error"
 
@@ -567,7 +573,7 @@ BASE_EXCEPTIONS_DICT: dict[type[Exception], list[str]] = {
 }
 
 # Container images
-NET_UTIL_CONTAINER_IMAGE = "quay.io/openshift-cnv/qe-cnv-tests-net-util-container:centos-stream-9"
+NET_UTIL_CONTAINER_IMAGE = "quay.io/kcrane/qe-cnv-tests-net-util-container:centos-stream-9"
 
 
 OC_ADM_LOGS_COMMAND = "oc adm node-logs"
@@ -678,6 +684,7 @@ class NamespacesNames:
 CNV_SUPPLEMENTAL_TEMPLATES_URL = "https://raw.githubusercontent.com/RHsyseng/cnv-supplemental-templates/main/templates"
 
 LINUX_AMD_64 = "linux/amd64"
+LINUX_S390X = "linux/s390x"
 
 EVICTIONSTRATEGY = "evictionStrategy"
 CRITICAL_STR = "critical"

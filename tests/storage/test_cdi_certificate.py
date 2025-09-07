@@ -7,9 +7,9 @@ Automatic refresh of CDI certificates test suite
 import datetime
 import logging
 import subprocess
-import time
 
 import pytest
+from dateutil import parser
 from ocp_resources.cdi import CDI
 from ocp_resources.config_map import ConfigMap
 from ocp_resources.datavolume import DataVolume
@@ -22,6 +22,7 @@ from timeout_sampler import TimeoutSampler
 import tests.storage.utils as storage_utils
 from utilities.constants import (
     CDI_SECRETS,
+    OS_FLAVOR_FEDORA,
     TIMEOUT_1MIN,
     TIMEOUT_3MIN,
     TIMEOUT_5SEC,
@@ -38,6 +39,7 @@ from utilities.storage import (
 )
 from utilities.virt import running_vm
 
+FEDORA_VM_MEMORY_SIZE = Images.Fedora.DEFAULT_MEMORY_SIZE
 pytestmark = pytest.mark.post_upgrade
 
 
@@ -77,20 +79,17 @@ def valid_cdi_certificates(secrets):
     auth.openshift.io/certificate-not-after: "2020-04-24T04:02:12Z"
     auth.openshift.io/certificate-not-before: "2020-04-22T04:02:11Z"
     """
+    now = datetime.datetime.now(datetime.timezone.utc)
+
     for secret in secrets:
         for cdi_secret in CDI_SECRETS:
             if secret.name == cdi_secret:
                 LOGGER.info(f"Checking {cdi_secret}...")
 
-                start = secret.certificate_not_before
-                start_timestamp = time.mktime(time.strptime(start, RFC3339_FORMAT))
+                start = parser.isoparse(secret.certificate_not_before)
+                end = parser.isoparse(secret.certificate_not_after)
 
-                end = secret.certificate_not_after
-                end_timestamp = time.mktime(time.strptime(end, RFC3339_FORMAT))
-
-                current_time = datetime.datetime.now().strftime(RFC3339_FORMAT)
-                current_timestamp = time.mktime(time.strptime(current_time, RFC3339_FORMAT))
-                assert start_timestamp <= current_timestamp <= end_timestamp, f"Certificate of {cdi_secret} expired"
+                assert start <= now <= end, f"Certificate of {cdi_secret} expired"
 
 
 @pytest.fixture()
@@ -179,7 +178,7 @@ def test_dv_delete_from_vm(
     multi_storage_cirros_vm.stop(wait=True)
     assert dv_of_multi_storage_cirros_vm.delete(wait=True, timeout=TIMEOUT_1MIN), "DV was not deleted"
     # DV re-creation is triggered by VM
-    running_vm(vm=multi_storage_cirros_vm, wait_for_interfaces=False)
+    running_vm(vm=multi_storage_cirros_vm, wait_for_interfaces=False, wait_for_cloud_init=True)
     check_disk_count_in_vm(vm=multi_storage_cirros_vm)
 
 
@@ -199,7 +198,7 @@ def test_upload_after_certs_renewal(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=dv_name,
-        size="1Gi",
+        size="10Gi",
         image_path=LOCAL_QCOW2_IMG_PATH,
         storage_class=storage_class_name_scope_module,
         insecure=True,
@@ -207,7 +206,9 @@ def test_upload_after_certs_renewal(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv, start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=dv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -218,7 +219,7 @@ def test_upload_after_certs_renewal(
             {
                 "dv_name": "dv-source",
                 "image": f"{Images.Cirros.DIR}/{Images.Cirros.QCOW2_IMG}",
-                "dv_size": "1Gi",
+                "dv_size": "10Gi",
                 "wait": True,
             },
         ),
@@ -244,7 +245,9 @@ def test_import_clone_after_certs_renewal(
         storage_class=data_volume_multi_storage_scope_module.storage_class,
     ) as cdv:
         cdv.wait_for_dv_success(timeout=TIMEOUT_3MIN)
-        with storage_utils.create_vm_from_dv(dv=cdv, start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=cdv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -264,7 +267,7 @@ def test_upload_after_validate_aggregated_api_cert(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name=dv_name,
-        size="1Gi",
+        size="10Gi",
         image_path=LOCAL_QCOW2_IMG_PATH,
         storage_class=storage_class_name_scope_module,
         insecure=True,
@@ -272,7 +275,9 @@ def test_upload_after_validate_aggregated_api_cert(
         check_upload_virtctl_result(result=res)
         dv = DataVolume(namespace=namespace.name, name=dv_name)
         dv.wait_for_dv_success(timeout=TIMEOUT_1MIN)
-        with storage_utils.create_vm_from_dv(dv=dv, start=True) as vm:
+        with storage_utils.create_vm_from_dv(
+            dv=dv, os_flavor=OS_FLAVOR_FEDORA, memory_guest=FEDORA_VM_MEMORY_SIZE, wait_for_cloud_init=True, start=True
+        ) as vm:
             check_disk_count_in_vm(vm=vm)
 
 
@@ -320,7 +325,7 @@ def test_cert_exposure_rotation(
     with virtctl_upload_dv(
         namespace=namespace.name,
         name="cnv-5708",
-        size="1Gi",
+        size="10Gi",
         storage_class=py_config["default_storage_class"],
         image_path=downloaded_cirros_image,
         insecure=False,
