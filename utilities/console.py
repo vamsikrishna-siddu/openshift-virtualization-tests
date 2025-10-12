@@ -31,12 +31,14 @@ class Console(object):
         """
         self.vm = vm
         # TODO: `BaseVirtualMachine` does not set cloud-init so the VM is using predefined credentials
-        self.username = username or getattr(self.vm, "login_params", {}).get("username") or self.vm.username
-        self.password = password or getattr(self.vm, "login_params", {}).get("password") or self.vm.password
+        self.username = "root"
+        self.password = "alpine"
         self.timeout = timeout
         self.child = None
+        # self.login_prompt = "localhost login:"
+        # self.prompt = r"localhost:~#"
         self.login_prompt = "login:"
-        self.prompt = prompt if prompt else [r"\$"]
+        self.prompt = prompt if prompt else [r"#", r"\$"]
         self.cmd = self._generate_cmd()
         self.base_dir = get_data_collector_base_directory()
 

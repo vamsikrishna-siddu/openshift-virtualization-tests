@@ -539,7 +539,7 @@ def test_blank_disk_import_validate_status(data_volume_multi_storage_scope_funct
                 "dv_name": "cnv-3065",
                 "file_name": Images.Cdi.QCOW2_IMG,
                 "source": HTTPS,
-                "size": "100Mi",
+                "size": "1Gi",
                 "configmap_name": INTERNAL_HTTP_CONFIGMAP_NAME,
             },
             marks=pytest.mark.polarion("CNV-3065"),

@@ -56,7 +56,6 @@ from utilities.constants import (
     IP_FAMILY_POLICY_PREFER_DUAL_STACK,
     LINUX_AMD_64,
     LINUX_STR,
-    OS_FLAVOR_CIRROS,
     OS_FLAVOR_FEDORA,
     OS_FLAVOR_WINDOWS,
     OS_PROC_NAME,
@@ -94,7 +93,7 @@ LOGGER = logging.getLogger(__name__)
 K8S_TAINT = "node.kubernetes.io/unschedulable"
 NO_SCHEDULE = "NoSchedule"
 CIRROS_IMAGE = "kubevirt/cirros-container-disk-demo:latest"
-FLAVORS_EXCLUDED_FROM_CLOUD_INIT = (OS_FLAVOR_WINDOWS, OS_FLAVOR_CIRROS)
+FLAVORS_EXCLUDED_FROM_CLOUD_INIT = (OS_FLAVOR_WINDOWS, OS_FLAVOR_FEDORA)
 VM_ERROR_STATUSES = [
     VirtualMachine.Status.CRASH_LOOPBACK_OFF,
     VirtualMachine.Status.ERROR_UNSCHEDULABLE,
@@ -1038,8 +1037,8 @@ class VirtualMachineForTests(VirtualMachine):
 
         if not (self.username and self.password):
             if _login_params:
-                self.username = _login_params.get("username")
-                self.password = _login_params.get("password")
+                self.username = "root"
+                self.password = "alpine"
                 return
 
             # Do not modify the defaults to OS like Windows where the password is already defined in the image
@@ -1059,8 +1058,11 @@ class VirtualMachineForTests(VirtualMachine):
     @property
     def ssh_exec(self):
         # In order to use this property VM should be created with ssh=True
-        self.username = self.username or self.login_params["username"]
-        self.password = self.password or self.login_params["password"]
+        # self.username = self.username or self.login_params["username"]
+        # self.password = self.password or self.login_params["password"]
+
+        self.username = "root"
+        self.password = "alpine"
 
         LOGGER.info(f"SSH command: ssh -o 'ProxyCommand={self.virtctl_port_forward_cmd}' {self.username}@{self.name}")
         host = Host(hostname=self.name)

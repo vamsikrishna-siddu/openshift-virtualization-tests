@@ -84,7 +84,7 @@ INTERNAL_HTTP_TEMPLATE = {
         "containers": [
             {
                 "name": "http",
-                "image": "quay.io/openshift-cnv/qe-cnv-tests-internal-http:v1.1.0",
+                "image": "quay.io/vamsi_siddu/qe-cnv-tests-internal-http:v1.1.0-linux-s390x",
                 "imagePullPolicy": "Always",
                 "command": ["/usr/sbin/nginx"],
                 "readinessProbe": {

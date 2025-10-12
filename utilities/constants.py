@@ -44,6 +44,7 @@ X86_64 = "x86_64"
 
 #  OS constants
 OS_FLAVOR_CIRROS = "cirros"
+OS_FLAVOR_ALPINE = "alpine"
 OS_FLAVOR_WINDOWS = "win"
 OS_FLAVOR_RHEL = "rhel"
 OS_FLAVOR_FEDORA = "fedora"
@@ -172,8 +173,8 @@ class ArchImages:
 
         Cdi = Cdi(
             # TODO: S390X does not support Cirros; this is a workaround until tests are moved to Fedora
-            QCOW2_IMG="Fedora-qcow2.img",
-            DIR=f"{BASE_IMAGES_DIR}/fedora-images",
+            QCOW2_IMG="alpine-qcow2.qcow2",
+            DIR=f"{BASE_IMAGES_DIR}/alpine-images",
             DEFAULT_DV_SIZE="10Gi",
         )
 
